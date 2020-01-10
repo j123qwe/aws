@@ -1,0 +1,42 @@
+#!/bin/bash
+
+check_packages(){     
+    DISTRO=$(cat /etc/*-release | grep ID_LIKE | cut -d= -f2)
+    if [[ ${DISTRO} =~ "debian" ]]; then
+        debian_package_install
+    elif [[ ${DISTRO} =~ "rhel" ]]; then
+        #rhel_package_install
+        echo "Not yet implemented. Exiting..."
+        exit
+    else
+        echo "This utility will only work with Debian or RHEL based Linux system. Exiting..."
+        exit
+    fi
+}
+
+debian_package_install(){
+    PACKAGES="awscli toilet nano git"
+    TOINSTALL=()
+    for PKG in ${PACKAGES[@]}; do
+        dpkg -s ${PKG} &> /dev/null
+        if [ $? -eq 1 ]; then
+            TOINSTALL+=("${PKG}")
+        elif [ $? -gt 1 ]; then
+            echo "Potential problem with ${PKG}. Please investigate. Exiting..."
+            exit
+        fi
+    done
+    if [[ ! -z ${TOINSTALL[@]} ]]; then
+            sudo apt install -y "${TOINSTALL[@]}"
+    fi
+}
+
+check_packages
+
+# for PKG in ${PACKAGES}; do    
+#  dpkg -s ${PKG} &> /dev/null    
+#  if [ $? -eq 1 ]; then    
+#   echo "${PKG} is not installed. Exiting..."    
+#   exit    
+#  fi    
+# done    
